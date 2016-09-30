@@ -214,18 +214,31 @@ int getNextDecisionLiteral(){
  * If there are no more clauses then simply chose the undefined literal with highest score.
  */
 
- int topClauseLit(int c) {
+ int topClauseLit() {
  	//CHECKS FIRST BUT NOT OTHERS
- 	vector<info> aux(clauses[c].size());
- 	for(uint i = 0; i < aux.size(); ++i) {
- 		aux[i].lit = abs(clauses[c][i]);
- 		aux[i].score = decision[abs(clauses[c][i])-1].score;
- 	}
- 	sort(aux.begin(),aux.end(),inc);
- 	for (uint j = 0; j < aux.size(); ++j) {
-        if (model[aux[j].lit] == UNDEF) {
-            return aux[j].lit;
-        }
+ 	while (not conflictClause.empty()) {
+ 		int c = conflictClause.top();
+		conflictClause.pop();
+ 		vector<info> aux(clauses[c].size());
+ 		for(uint i = 0; i < aux.size(); ++i) {
+ 			aux[i].lit = abs(clauses[c][i]);
+ 			aux[i].score = decision[abs(clauses[c][i])-1].score;
+ 		}
+ 		sort(aux.begin(),aux.end(),inc);
+ 		for (uint j = 0; j < aux.size(); ++j) {
+        	if (model[aux[j].lit] == UNDEF) {
+        		decision[abs(aux[j].lit)-1].score += 1.0f;
+				cut(abs(aux[j].lit)-1);
+            	return aux[j].lit;
+        	}
+    	}
+	}
+    //list has clauses with only defined literals
+    sort(decision.begin(), decision.end(), inc);
+    for (uint i = 0; i < numVars; ++i) {
+       	if (model[decision[i].lit] == UNDEF) {
+           	return decision[i].lit;
+       	}
     }
     return 0;
  }
@@ -242,14 +255,7 @@ int getNextDecisionLiteral2(){
     	return 0;
 	}
 	else {
-		int c = conflictClause.top();
-		cout << "CLAUSE: " << c << endl;
-		conflictClause.pop();
-		int res = topClauseLit(c);
-		cout << "RES: " << res << endl;
-		decision[res].score += 1.0f;
-		cut(res);
-		return res;
+		return topClauseLit();
 	}
 }
 
