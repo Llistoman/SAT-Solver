@@ -215,6 +215,7 @@ int getNextDecisionLiteral(){
  */
 
  int topClauseLit(int c) {
+ 	//CHECKS FIRST BUT NOT OTHERS
  	vector<info> aux(clauses[c].size());
  	for(uint i = 0; i < aux.size(); ++i) {
  		aux[i].lit = abs(clauses[c][i]);
@@ -223,7 +224,7 @@ int getNextDecisionLiteral(){
  	sort(aux.begin(),aux.end(),inc);
  	for (uint j = 0; j < aux.size(); ++j) {
         if (model[aux[j].lit] == UNDEF) {
-            	return aux[j].lit;
+            return aux[j].lit;
         }
     }
     return 0;
@@ -242,8 +243,10 @@ int getNextDecisionLiteral2(){
 	}
 	else {
 		int c = conflictClause.top();
+		cout << "CLAUSE: " << c << endl;
 		conflictClause.pop();
 		int res = topClauseLit(c);
+		cout << "RES: " << res << endl;
 		decision[res].score += 1.0f;
 		cut(res);
 		return res;
