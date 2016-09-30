@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
+#include <stack>
 using namespace std;
 
 #define UNDEF -1
@@ -10,11 +11,13 @@ using namespace std;
 
 struct info{
     int lit;
-    int conflict;
+    float score;
 };
 
 int conflicts;
-int decisions;
+int pickVar;
+
+stack<int> conflictClause;
 
 uint numVars;
 uint numClauses;
@@ -27,8 +30,7 @@ vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
 
-//mirar primer clausules negades perque asegures coses
-//despres les altres
+bool inc(info a, info b) {return a.score > b.score;}
 
 void readClauses( ){
   // Skip comments
@@ -42,7 +44,7 @@ void readClauses( ){
   cin >> aux >> numVars >> numClauses;
   clauses.resize(numClauses);
 
-  decisions = 0;
+  pickVar = 0;
   conflicts = 0;
 
   //UP
@@ -53,7 +55,7 @@ void readClauses( ){
   decision.resize(numVars);
   for (int k = 0; k < numVars; ++k) {
       decision[k].lit = k+1;
-      decision[k].conflict = 0;
+      decision[k].score = 0.0f;
   }
 
   // Read clauses
@@ -64,16 +66,20 @@ void readClauses( ){
     	//UP
     	if (lit>0) positive[lit-1].push_back(i);
     	else negative[abs(lit)-1].push_back(i);
+    	//HE
+    	decision[abs(lit)-1].score += 1.0f;
     }
   }
+  sort(decision.begin(), decision.end(), inc);
 }
 
 void debug() {
-    //for (int i = 0; i < numVars; ++i) cout << decision[i].lit << " lit, " << decision[i].conflict << " conf" << endl;
+    //for (int i = 0; i < numVars; ++i) cout << decision[i].lit << " lit, " << decision[i].score << " conf" << endl;
 }
 
-void cut() {
-    for (int i = 0; i < numVars; ++i) decision[i].conflict /= 2;
+void cut(int x) {
+    for (int i = 0; i < numVars; ++i) 
+    	if (i != x) decision[i].score *= 0.95f;
 }
 
 int currentValueInModel(int lit){
@@ -83,7 +89,6 @@ int currentValueInModel(int lit){
     else return 1 - model[-lit];
   }
 }
-
 
 void setLiteralToTrue(int lit){
   modelStack.push_back(lit);
@@ -113,6 +118,11 @@ bool propagateGivesConflict ( ) {
   return false;
 }
 
+/* PROPAGATION
+ * First look for clauses with the opposite polarity of the literal, then with the same polarity
+ * This way we can find conflicts faster
+ */
+
 bool propagateGivesConflict2 ( ) {
 	while ( indexOfNextLitToPropagate < modelStack.size() ) {
         int auxlit = modelStack[indexOfNextLitToPropagate];
@@ -138,7 +148,11 @@ bool propagateGivesConflict2 ( ) {
             }
             if (not someLitTrue and numUndefs == 0) {
                 ++conflicts;
-                ++decision[abs(auxlit)-1].conflict;
+                //Berkmin
+                conflictClause.push(auxclause1[i]);
+                //VSIDS
+                //decision[abs(auxlit)-1].score += 1.0f;
+                //cut(abs(auxlit)-1);
                 return true; // conflict! all lits false
             }
             else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
@@ -154,7 +168,11 @@ bool propagateGivesConflict2 ( ) {
             }
             if (not someLitTrue and numUndefs == 0) {
                 ++conflicts;
-                ++decision[abs(auxlit)-1].conflict;
+                //Berkmin
+                conflictClause.push(auxclause2[i]);
+                //VSIDS
+                //decision[abs(auxlit)-1].score += 1.0f;
+                //cut(abs(auxlit)-1);
                 return true; // conflict! all lits false
             }
             else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
@@ -180,26 +198,56 @@ void backtrack(){
   setLiteralToTrue(-lit);  // reverse last decision
 }
 
-bool inc(info a, info b) {return a.conflict > b.conflict;}
-
 // Heuristic for finding the next decision literal:
 int getNextDecisionLiteral(){
-    ++decisions;
+    ++pickVar;
   for (uint i = 1; i <= numVars; ++i) // stupid heuristic:
     if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively
   return 0; // reurns 0 when all literals are defined*/
 }
 
-int getNextDecisionLiteral2(){
-    ++decisions;
-    if (decisions % 500 == 0) cut();
-    sort(decision.begin(), decision.end(), inc);
-    for (uint i = 0; i < numVars; ++i) {
-        if (model[decision[i].lit] == UNDEF) {
-            return decision[i].lit;
+/* HEURISTIC: Berkmin SAT (Better VSIDS)
+ * Keep a counter for every conflict that a variable has (score).
+ * When a conflict appears, put the clause where it appears on top of a list.
+ * Select the literal with the highest score from within that clause and pop the clause from the list.
+ * Increment score of literal by 1 and multiply rest by 0.95 (this is to penalize older ones).
+ * If there are no more clauses then simply chose the undefined literal with highest score.
+ */
+
+ int topClauseLit(int c) {
+ 	vector<info> aux(clauses[c].size());
+ 	for(uint i = 0; i < aux.size(); ++i) {
+ 		aux[i].lit = abs(clauses[c][i]);
+ 		aux[i].score = decision[abs(clauses[c][i])-1].score;
+ 	}
+ 	sort(aux.begin(),aux.end(),inc);
+ 	for (uint j = 0; j < aux.size(); ++j) {
+        if (model[aux[j].lit] == UNDEF) {
+            	return aux[j].lit;
         }
     }
     return 0;
+ }
+
+int getNextDecisionLiteral2(){
+    ++pickVar;
+    if (conflictClause.empty()) {
+    	sort(decision.begin(), decision.end(), inc);
+    	for (uint i = 0; i < numVars; ++i) {
+        	if (model[decision[i].lit] == UNDEF) {
+            	return decision[i].lit;
+        	}
+    	}
+    	return 0;
+	}
+	else {
+		int c = conflictClause.top();
+		conflictClause.pop();
+		int res = topClauseLit(c);
+		decision[res].score += 1.0f;
+		cut(res);
+		return res;
+	}
 }
 
 void checkmodel(){
@@ -233,11 +281,11 @@ int main(){
   // DPLL algorithm
   while (true) {
     while ( propagateGivesConflict2() ) {
-      if ( decisionLevel == 0) { debug(); cout << "UNSATISFIABLE" << endl << "DECISIONS: " << decisions << endl << "CONFLICTS: " << conflicts << endl; return 10; }
+      if ( decisionLevel == 0) { debug(); cout << "UNSATISFIABLE" << endl << "DECISIONS: " << pickVar << endl << "CONFLICTS: " << conflicts << endl; return 10; }
       backtrack();
     }
     int decisionLit = getNextDecisionLiteral2();
-    if (decisionLit == 0) { checkmodel(); debug(); cout << "SATISFIABLE " << endl << "DECISIONS: " << decisions << endl << "CONFLICTS: " << conflicts << endl; return 20; }
+    if (decisionLit == 0) { checkmodel(); debug(); cout << "SATISFIABLE " << endl << "DECISIONS: " << pickVar << endl << "CONFLICTS: " << conflicts << endl; return 20; }
     // start new decision level:
     modelStack.push_back(0);  // push mark indicating new DL
     ++indexOfNextLitToPropagate;
