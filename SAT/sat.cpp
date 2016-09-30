@@ -133,15 +133,10 @@ bool propagateGivesConflict2 ( ) {
         ++indexOfNextLitToPropagate;
         ++propagations;
         vector<int> auxclause1;
-        vector<int> auxclause2;
-        if (auxlit > 0) {
-            auxclause1 = negative[auxlit-1];
-            auxclause2 = positive[auxlit-1];
-        }
-        else {
-            auxclause1 = positive[abs(auxlit)-1];
-            auxclause2 = negative[abs(auxlit)-1];
-        }
+
+        if (auxlit > 0) auxclause1 = negative[auxlit-1];
+        else auxclause1 = positive[abs(auxlit)-1];
+
         for (uint i = 0; i < auxclause1.size(); ++i) {
             bool someLitTrue = false;
             int numUndefs = 0;
@@ -154,25 +149,6 @@ bool propagateGivesConflict2 ( ) {
             if (not someLitTrue and numUndefs == 0) {
                 //Berkmin
                 conflictClause.push(auxclause1[i]);
-                //VSIDS
-                //decision[abs(auxlit)-1].score += 1.0f;
-                //cut(abs(auxlit)-1);
-                return true; // conflict! all lits false
-            }
-            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
-        }
-        for (uint i = 0; i < auxclause2.size(); ++i) {
-            bool someLitTrue = false;
-            int numUndefs = 0;
-            int lastLitUndef = 0;
-            for (uint j = 0; not someLitTrue and j < clauses[auxclause2[i]].size(); ++j){
-                int val = currentValueInModel(clauses[auxclause2[i]][j]);
-                if (val == TRUE) someLitTrue = true;
-                else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[auxclause2[i]][j]; }
-            }
-            if (not someLitTrue and numUndefs == 0) {
-                //Berkmin
-                conflictClause.push(auxclause2[i]);
                 //VSIDS
                 //decision[abs(auxlit)-1].score += 1.0f;
                 //cut(abs(auxlit)-1);
