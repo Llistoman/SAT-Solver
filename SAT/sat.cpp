@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
-#include <stack>
+#include <queue>
 using namespace std;
 
 #define UNDEF -1
@@ -14,10 +14,10 @@ struct info{
     float score;
 };
 
-int conflicts;
+int propagations;
 int pickVar;
 
-stack<int> conflictClause;
+queue<int> conflictClause;
 
 uint numVars;
 uint numClauses;
@@ -45,7 +45,7 @@ void readClauses( ){
   clauses.resize(numClauses);
 
   pickVar = 0;
-  conflicts = 0;
+  propagations = 0;
 
   //UP
   positive.resize(numVars);
@@ -62,7 +62,7 @@ void readClauses( ){
   for (uint i = 0; i < numClauses; ++i) {
     int lit;
     while (cin >> lit and lit != 0) {
-    	clauses[i].push_back(lit);
+        clauses[i].push_back(lit);
     	//UP
     	if (lit>0) positive[lit-1].push_back(i);
     	else negative[abs(lit)-1].push_back(i);
@@ -73,16 +73,20 @@ void readClauses( ){
   sort(decision.begin(), decision.end(), inc);
 }
 
-void debug() {
+inline void debug(clock_t start) {
     //for (int i = 0; i < numVars; ++i) cout << decision[i].lit << " lit, " << decision[i].score << " conf" << endl;
+    double timeTaken = ((double)(clock() - start) / CLOCKS_PER_SEC);
+    cout << "Decisions: " << pickVar << endl << "Propagations: " << propagations << endl << "Time: " << timeTaken << endl;
+    cout << "Props/time: " << ((double) propagations) / timeTaken << endl;
 }
 
-void cut(int x) {
-    for (int i = 0; i < numVars; ++i) 
-    	if (i != x) decision[i].score *= 0.95f;
+inline void cut(int x) {
+    for (int i = 0; i < numVars; ++i)
+        //if (i != x) decision[i].score *= 0.95f;
+        decision[i].score *= 1.0f/4.0f;
 }
 
-int currentValueInModel(int lit){
+inline int currentValueInModel(int lit){
   if (lit >= 0) return model[lit];
   else {
     if (model[-lit] == UNDEF) return UNDEF;
@@ -90,7 +94,7 @@ int currentValueInModel(int lit){
   }
 }
 
-void setLiteralToTrue(int lit){
+inline void setLiteralToTrue(int lit){
   modelStack.push_back(lit);
   if (lit > 0) model[lit] = TRUE;
   else model[-lit] = FALSE;		
@@ -99,6 +103,7 @@ void setLiteralToTrue(int lit){
 bool propagateGivesConflict ( ) {
   while ( indexOfNextLitToPropagate < modelStack.size() ) {
     ++indexOfNextLitToPropagate;
+    ++propagations;
     for (uint i = 0; i < numClauses; ++i) {
       bool someLitTrue = false;
       int numUndefs = 0;
@@ -109,7 +114,6 @@ bool propagateGivesConflict ( ) {
 	else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[i][k]; }
       }
       if (not someLitTrue and numUndefs == 0) {
-          ++conflicts;
           return true; // conflict! all lits false
       }
       else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);	
@@ -127,6 +131,7 @@ bool propagateGivesConflict2 ( ) {
 	while ( indexOfNextLitToPropagate < modelStack.size() ) {
         int auxlit = modelStack[indexOfNextLitToPropagate];
         ++indexOfNextLitToPropagate;
+        ++propagations;
         vector<int> auxclause1;
         vector<int> auxclause2;
         if (auxlit > 0) {
@@ -147,7 +152,6 @@ bool propagateGivesConflict2 ( ) {
                 else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[auxclause1[i]][j]; }
             }
             if (not someLitTrue and numUndefs == 0) {
-                ++conflicts;
                 //Berkmin
                 conflictClause.push(auxclause1[i]);
                 //VSIDS
@@ -167,7 +171,6 @@ bool propagateGivesConflict2 ( ) {
                 else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[auxclause2[i]][j]; }
             }
             if (not someLitTrue and numUndefs == 0) {
-                ++conflicts;
                 //Berkmin
                 conflictClause.push(auxclause2[i]);
                 //VSIDS
@@ -215,9 +218,8 @@ int getNextDecisionLiteral(){
  */
 
  int topClauseLit() {
- 	//CHECKS FIRST BUT NOT OTHERS
  	while (not conflictClause.empty()) {
- 		int c = conflictClause.top();
+        int c = conflictClause.front();
 		conflictClause.pop();
  		vector<info> aux(clauses[c].size());
  		for(uint i = 0; i < aux.size(); ++i) {
@@ -288,13 +290,16 @@ int main(){
     }
   
   // DPLL algorithm
+
+  clock_t start = clock();
+
   while (true) {
     while ( propagateGivesConflict2() ) {
-      if ( decisionLevel == 0) { debug(); cout << "UNSATISFIABLE" << endl << "DECISIONS: " << pickVar << endl << "CONFLICTS: " << conflicts << endl; return 10; }
+      if ( decisionLevel == 0) { cout << "UNSATISFIABLE" << endl; debug(start); return 10; }
       backtrack();
     }
     int decisionLit = getNextDecisionLiteral2();
-    if (decisionLit == 0) { checkmodel(); debug(); cout << "SATISFIABLE " << endl << "DECISIONS: " << pickVar << endl << "CONFLICTS: " << conflicts << endl; return 20; }
+    if (decisionLit == 0) { checkmodel(); cout << "SATISFIABLE " << endl; debug(start); return 20; }
     // start new decision level:
     modelStack.push_back(0);  // push mark indicating new DL
     ++indexOfNextLitToPropagate;
