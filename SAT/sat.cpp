@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <vector>
-#include <queue>
+#include <stack>
 using namespace std;
 
 #define UNDEF -1
@@ -17,7 +17,7 @@ struct info{
 int propagations;
 int pickVar;
 
-queue<int> conflictClause;
+stack<int> conflictClause;
 
 uint numVars;
 uint numClauses;
@@ -213,14 +213,14 @@ int getNextDecisionLiteral(){
  * Keep a counter for every conflict that a variable has (score).
  * When a conflict appears, put the clause where it appears on top of a list.
  * Select the literal with the highest score from within that clause and pop the clause from the list.
- * Increment score of literal by 1 and multiply rest by 0.95 (this is to penalize older ones).
+ * Increment score of literal by 1 and multiply rest by 1/4 (this is to penalize older ones).
  * If there are no more clauses then simply chose the undefined literal with highest score.
  */
 
  int topClauseLit() {
  	while (not conflictClause.empty()) {
-        int c = conflictClause.front();
-		conflictClause.pop();
+        int c = conflictClause.top();
+        conflictClause.pop();
  		vector<info> aux(clauses[c].size());
  		for(uint i = 0; i < aux.size(); ++i) {
  			aux[i].lit = abs(clauses[c][i]);
@@ -230,7 +230,7 @@ int getNextDecisionLiteral(){
  		for (uint j = 0; j < aux.size(); ++j) {
         	if (model[aux[j].lit] == UNDEF) {
         		decision[abs(aux[j].lit)-1].score += 1.0f;
-				cut(abs(aux[j].lit)-1);
+                cut(abs(aux[j].lit)-1);
             	return aux[j].lit;
         	}
     	}
