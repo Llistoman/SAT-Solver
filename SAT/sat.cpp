@@ -11,26 +11,37 @@ using namespace std;
 
 struct info{
     int lit;
-    float score;
+    int score;
 };
 
-int propagations;
-int pickVar;
-
-stack<int> conflictClause;
+int numPropagations = 0;
+int numDecisions = 0;
 
 uint numVars;
 uint numClauses;
-vector<vector<int> > clauses;
-vector<vector<int> > negative;
-vector<vector<int> > positive;
-vector<info> decision;
+
+typedef vector<int> Clause;
+
+vector<Clause> clauses;
+vector<vector<Clause> > positive;
+vector<vector<Clause> > negative;
+vector<vector<Clause> > litClause;
+vector<info> litFreq;
+vector<info> litScore;
+
 vector<int> model;
 vector<int> modelStack;
 uint indexOfNextLitToPropagate;
 uint decisionLevel;
 
-bool inc(info a, info b) {return a.score > b.score;}
+bool desc(info a, info b) {return a.score > b.score;}
+
+inline void debug(clock_t start) {
+    //for (int i = 0; i < numVars; ++i) cout << decision[i].lit << " lit, " << decision[i].score << " conf" << endl;
+    double timeTaken = ((double)(clock() - start) / CLOCKS_PER_SEC);
+    cout << "Decisions: " << numDecisions << endl << "Propagations: " << numPropagations << endl << "Time: " << timeTaken << endl;
+    cout << "Props/time: " << ((double) numPropagations) / timeTaken << endl;
+}
 
 void readClauses( ){
   // Skip comments
@@ -44,46 +55,40 @@ void readClauses( ){
   cin >> aux >> numVars >> numClauses;
   clauses.resize(numClauses);
 
-  pickVar = 0;
-  propagations = 0;
-
-  //UP
   positive.resize(numVars);
   negative.resize(numVars);
+  litClause.resize(numVars);
+  litFreq.resize(numVars);
+  litScore.resize(numVars+1);
 
-  //HE
-  decision.resize(numVars);
   for (int k = 0; k < numVars; ++k) {
-      decision[k].lit = k+1;
-      decision[k].score = 0.0f;
+      litFreq[k].lit = k+1;
+      litFreq[k].score = 0;
   }
 
-  // Read clauses
-  for (uint i = 0; i < numClauses; ++i) {
+   // Read clauses
+  for (uint i = 0; i < numClauses; ++i)
+  {
     int lit;
-    while (cin >> lit and lit != 0) {
+    int lits[3]; int j = 0;
+    while (cin >> lit && lit != 0)
+    {
         clauses[i].push_back(lit);
-    	//UP
-    	if (lit>0) positive[lit-1].push_back(i);
-    	else negative[abs(lit)-1].push_back(i);
-    	//HE
-    	decision[abs(lit)-1].score += 1.0f;
+        lits[j++] = lit;
+    }
+
+    for(uint k = 0; k < 3; ++k)
+    {
+        lit = lits[k];
+        litFreq[abs(lit)-1].lit = lit;
+        litFreq[abs(lit)-1].score++; //Increase frequency
+
+        if(lit > 0) positive[abs(lit)-1].push_back(clauses[i]);
+        else negative[abs(lit)-1].push_back(clauses[i]);
+        litClause[abs(lit)-1].push_back(clauses[i]);
     }
   }
-  sort(decision.begin(), decision.end(), inc);
-}
-
-inline void debug(clock_t start) {
-    //for (int i = 0; i < numVars; ++i) cout << decision[i].lit << " lit, " << decision[i].score << " conf" << endl;
-    double timeTaken = ((double)(clock() - start) / CLOCKS_PER_SEC);
-    cout << "Decisions: " << pickVar << endl << "Propagations: " << propagations << endl << "Time: " << timeTaken << endl;
-    cout << "Props/time: " << ((double) propagations) / timeTaken << endl;
-}
-
-inline void cut(int x) {
-    for (int i = 0; i < numVars; ++i)
-        //if (i != x) decision[i].score *= 0.95f;
-        decision[i].score *= 1.0f/4.0f;
+  sort(litFreq.begin(),litFreq.end(),desc);
 }
 
 inline int currentValueInModel(int lit){
@@ -102,64 +107,36 @@ inline void setLiteralToTrue(int lit){
 
 bool propagateGivesConflict ( ) {
   while ( indexOfNextLitToPropagate < modelStack.size() ) {
+    int lit = modelStack[indexOfNextLitToPropagate];
     ++indexOfNextLitToPropagate;
-    ++propagations;
-    for (uint i = 0; i < numClauses; ++i) {
-      bool someLitTrue = false;
-      int numUndefs = 0;
-      int lastLitUndef = 0;
-      for (uint k = 0; not someLitTrue and k < clauses[i].size(); ++k){
-	int val = currentValueInModel(clauses[i][k]);
-	if (val == TRUE) someLitTrue = true;
-	else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[i][k]; }
-      }
-      if (not someLitTrue and numUndefs == 0) {
-          return true; // conflict! all lits false
-      }
-      else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);	
-    }    
-  }
-  return false;
-}
+    ++numPropagations;
 
-/* PROPAGATION
- * First look for clauses with the opposite polarity of the literal, then with the same polarity
- * This way we can find conflicts faster
- */
+    //Only care about clauses where lit appears in the opposite state
+    const vector<Clause> &checkConflict = (currentValueInModel(abs(lit)) == TRUE) ? negative[abs(lit)-1] : positive[abs(lit)-1];
 
-bool propagateGivesConflict2 ( ) {
-	while ( indexOfNextLitToPropagate < modelStack.size() ) {
-        int auxlit = modelStack[indexOfNextLitToPropagate];
-        ++indexOfNextLitToPropagate;
-        ++propagations;
-        vector<int> auxclause1;
-
-        if (auxlit > 0) auxclause1 = negative[auxlit-1];
-        else auxclause1 = positive[abs(auxlit)-1];
-
-        for (uint i = 0; i < auxclause1.size(); ++i) {
-            bool someLitTrue = false;
+    for(uint i = 0; i < checkConflict.size(); ++i) {
             int numUndefs = 0;
             int lastLitUndef = 0;
-            for (uint j = 0; not someLitTrue and j < clauses[auxclause1[i]].size(); ++j){
-                int val = currentValueInModel(clauses[auxclause1[i]][j]);
-                if (val == TRUE) someLitTrue = true;
-                else if (val == UNDEF){ ++numUndefs; lastLitUndef = clauses[auxclause1[i]][j]; }
+            bool someLitTrue = false;
+            for(uint j = 0; !someLitTrue && j < 3; ++j) {
+                const int jval = currentValueInModel(checkConflict[i][j]);
+                if (jval == UNDEF) {
+                    ++numUndefs;
+                    lastLitUndef = checkConflict[i][j];
+                }
+                else if(jval == TRUE) someLitTrue = true;
             }
-            if (not someLitTrue and numUndefs == 0) {
-                //Berkmin
-                conflictClause.push(auxclause1[i]);
-                //VSIDS
-                //decision[abs(auxlit)-1].score += 1.0f;
-                //cut(abs(auxlit)-1);
-                return true; // conflict! all lits false
+            if (!someLitTrue) { //for each clause
+                if(numUndefs == 0) {
+                    //CONFLICT! All literals are false!
+                    return true;
+                }
+                else if(numUndefs == 1) setLiteralToTrue(lastLitUndef);
             }
-            else if (not someLitTrue and numUndefs == 1) setLiteralToTrue(lastLitUndef);
         }
     }
-	return false;
+    return false;
 }
-
 
 void backtrack(){
   uint i = modelStack.size() -1;
@@ -179,63 +156,12 @@ void backtrack(){
 
 // Heuristic for finding the next decision literal:
 int getNextDecisionLiteral(){
-    ++pickVar;
+    ++numDecisions;
   for (uint i = 1; i <= numVars; ++i) // stupid heuristic:
     if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively
   return 0; // reurns 0 when all literals are defined*/
 }
 
-/* HEURISTIC: Berkmin SAT (Better VSIDS)
- * Keep a counter for every conflict that a variable has (score).
- * When a conflict appears, put the clause where it appears on top of a list.
- * Select the literal with the highest score from within that clause and pop the clause from the list.
- * Increment score of literal by 1 and multiply rest by 1/4 (this is to penalize older ones).
- * If there are no more clauses then simply chose the undefined literal with highest score.
- */
-
- int topClauseLit() {
- 	while (not conflictClause.empty()) {
-        int c = conflictClause.top();
-        conflictClause.pop();
- 		vector<info> aux(clauses[c].size());
- 		for(uint i = 0; i < aux.size(); ++i) {
- 			aux[i].lit = abs(clauses[c][i]);
- 			aux[i].score = decision[abs(clauses[c][i])-1].score;
- 		}
- 		sort(aux.begin(),aux.end(),inc);
- 		for (uint j = 0; j < aux.size(); ++j) {
-        	if (model[aux[j].lit] == UNDEF) {
-        		decision[abs(aux[j].lit)-1].score += 1.0f;
-                cut(abs(aux[j].lit)-1);
-            	return aux[j].lit;
-        	}
-    	}
-	}
-    //list has clauses with only defined literals
-    sort(decision.begin(), decision.end(), inc);
-    for (uint i = 0; i < numVars; ++i) {
-       	if (model[decision[i].lit] == UNDEF) {
-           	return decision[i].lit;
-       	}
-    }
-    return 0;
- }
-
-int getNextDecisionLiteral2(){
-    ++pickVar;
-    if (conflictClause.empty()) {
-    	sort(decision.begin(), decision.end(), inc);
-    	for (uint i = 0; i < numVars; ++i) {
-        	if (model[decision[i].lit] == UNDEF) {
-            	return decision[i].lit;
-        	}
-    	}
-    	return 0;
-	}
-	else {
-		return topClauseLit();
-	}
-}
 
 void checkmodel(){
   for (int i = 0; i < numClauses; ++i){
@@ -256,25 +182,16 @@ int main(){
   indexOfNextLitToPropagate = 0;  
   decisionLevel = 0;
   
-  // Take care of initial unit clauses, if any
-  for (uint i = 0; i < numClauses; ++i)
-    if (clauses[i].size() == 1) {
-      int lit = clauses[i][0];
-      int val = currentValueInModel(lit);
-      if (val == FALSE) {cout << "UNSATISFIABLE" << endl; return 10;}
-      else if (val == UNDEF) setLiteralToTrue(lit);
-    }
-  
   // DPLL algorithm
 
   clock_t start = clock();
 
   while (true) {
-    while ( propagateGivesConflict2() ) {
+    while ( propagateGivesConflict() ) {
       if ( decisionLevel == 0) { cout << "UNSATISFIABLE" << endl; debug(start); return 10; }
       backtrack();
     }
-    int decisionLit = getNextDecisionLiteral2();
+    int decisionLit = getNextDecisionLiteral();
     if (decisionLit == 0) { checkmodel(); cout << "SATISFIABLE " << endl; debug(start); return 20; }
     // start new decision level:
     modelStack.push_back(0);  // push mark indicating new DL
