@@ -1,0 +1,501 @@
+========================
+random3SAT/vars-100-10.cnf
+
+UNSATISFIABLE 
+Decisions: 251
+Propagations: 5968
+Time: 0.005848
+Props/time: 1020519
+========================
+
+========================
+random3SAT/vars-100-1.cnf
+
+SATISFIABLE 
+Decisions: 116
+Propagations: 2533
+Time: 0.002422
+Props/time: 1045829
+========================
+
+========================
+random3SAT/vars-100-2.cnf
+
+SATISFIABLE 
+Decisions: 52
+Propagations: 837
+Time: 0.00091
+Props/time: 919780
+========================
+
+========================
+random3SAT/vars-100-3.cnf
+
+UNSATISFIABLE 
+Decisions: 310
+Propagations: 7278
+Time: 0.006537
+Props/time: 1113354
+========================
+
+========================
+random3SAT/vars-100-4.cnf
+
+UNSATISFIABLE 
+Decisions: 348
+Propagations: 7927
+Time: 0.00686
+Props/time: 1155539
+========================
+
+========================
+random3SAT/vars-100-5.cnf
+
+SATISFIABLE 
+Decisions: 165
+Propagations: 3631
+Time: 0.0031
+Props/time: 1171290
+========================
+
+========================
+random3SAT/vars-100-6.cnf
+
+SATISFIABLE 
+Decisions: 454
+Propagations: 10406
+Time: 0.008068
+Props/time: 1289786
+========================
+
+========================
+random3SAT/vars-100-7.cnf
+
+SATISFIABLE 
+Decisions: 307
+Propagations: 6842
+Time: 0.005225
+Props/time: 1309473
+========================
+
+========================
+random3SAT/vars-100-8.cnf
+
+SATISFIABLE 
+Decisions: 201
+Propagations: 4584
+Time: 0.003327
+Props/time: 1377817
+========================
+
+========================
+random3SAT/vars-100-9.cnf
+
+UNSATISFIABLE 
+Decisions: 190
+Propagations: 4638
+Time: 0.003085
+Props/time: 1503403
+========================
+
+========================
+random3SAT/vars-150-10.cnf
+
+UNSATISFIABLE 
+Decisions: 2322
+Propagations: 70691
+Time: 0.052631
+Props/time: 1343143
+========================
+
+========================
+random3SAT/vars-150-1.cnf
+
+SATISFIABLE 
+Decisions: 167
+Propagations: 4615
+Time: 0.00343
+Props/time: 1345481
+========================
+
+========================
+random3SAT/vars-150-2.cnf
+
+SATISFIABLE 
+Decisions: 713
+Propagations: 20538
+Time: 0.014897
+Props/time: 1378666
+========================
+
+========================
+random3SAT/vars-150-3.cnf
+
+SATISFIABLE 
+Decisions: 130
+Propagations: 3633
+Time: 0.00248
+Props/time: 1464919
+========================
+
+========================
+random3SAT/vars-150-4.cnf
+
+SATISFIABLE 
+Decisions: 2066
+Propagations: 57714
+Time: 0.037335
+Props/time: 1545841
+========================
+
+========================
+random3SAT/vars-150-5.cnf
+
+UNSATISFIABLE 
+Decisions: 2919
+Propagations: 84528
+Time: 0.049332
+Props/time: 1713451
+========================
+
+========================
+random3SAT/vars-150-6.cnf
+
+SATISFIABLE 
+Decisions: 143
+Propagations: 4048
+Time: 0.002307
+Props/time: 1754659
+========================
+
+========================
+random3SAT/vars-150-7.cnf
+
+UNSATISFIABLE 
+Decisions: 2733
+Propagations: 77739
+Time: 0.056809
+Props/time: 1368427
+========================
+
+========================
+random3SAT/vars-150-8.cnf
+
+SATISFIABLE 
+Decisions: 519
+Propagations: 15872
+Time: 0.010242
+Props/time: 1549697
+========================
+
+========================
+random3SAT/vars-150-9.cnf
+
+SATISFIABLE 
+Decisions: 4281
+Propagations: 131982
+Time: 0.076224
+Props/time: 1731501
+========================
+
+========================
+random3SAT/vars-200-10.cnf
+
+UNSATISFIABLE 
+Decisions: 21032
+Propagations: 722514
+Time: 0.457254
+Props/time: 1580115
+========================
+
+========================
+random3SAT/vars-200-1.cnf
+
+UNSATISFIABLE 
+Decisions: 16481
+Propagations: 582620
+Time: 0.359526
+Props/time: 1620522
+========================
+
+========================
+random3SAT/vars-200-2.cnf
+
+SATISFIABLE 
+Decisions: 804
+Propagations: 26723
+Time: 0.02838
+Props/time: 941613
+========================
+
+========================
+random3SAT/vars-200-3.cnf
+
+UNSATISFIABLE 
+Decisions: 14894
+Propagations: 523791
+Time: 0.326982
+Props/time: 1601895
+========================
+
+========================
+random3SAT/vars-200-4.cnf
+
+UNSATISFIABLE 
+Decisions: 6386
+Propagations: 216433
+Time: 0.137701
+Props/time: 1571760
+========================
+
+========================
+random3SAT/vars-200-5.cnf
+
+UNSATISFIABLE 
+Decisions: 11670
+Propagations: 413417
+Time: 0.254916
+Props/time: 1621777
+========================
+
+========================
+random3SAT/vars-200-6.cnf
+
+SATISFIABLE 
+Decisions: 12723
+Propagations: 436369
+Time: 0.276918
+Props/time: 1575805
+========================
+
+========================
+random3SAT/vars-200-7.cnf
+
+UNSATISFIABLE 
+Decisions: 39015
+Propagations: 1387402
+Time: 0.854009
+Props/time: 1624575
+========================
+
+========================
+random3SAT/vars-200-8.cnf
+
+SATISFIABLE 
+Decisions: 5917
+Propagations: 204212
+Time: 0.12838
+Props/time: 1590683
+========================
+
+========================
+random3SAT/vars-200-9.cnf
+
+SATISFIABLE 
+Decisions: 7473
+Propagations: 259983
+Time: 0.163493
+Props/time: 1590178
+========================
+
+========================
+random3SAT/vars-250-10.cnf
+
+SATISFIABLE 
+Decisions: 1682
+Propagations: 66296
+Time: 0.046262
+Props/time: 1433055
+========================
+
+========================
+random3SAT/vars-250-1.cnf
+
+UNSATISFIABLE 
+Decisions: 89604
+Propagations: 3529473
+Time: 2.41115
+Props/time: 1463811
+========================
+
+========================
+random3SAT/vars-250-2.cnf
+
+UNSATISFIABLE 
+Decisions: 123985
+Propagations: 4913909
+Time: 3.37444
+Props/time: 1456214
+========================
+
+========================
+random3SAT/vars-250-3.cnf
+
+SATISFIABLE 
+Decisions: 56777
+Propagations: 2219399
+Time: 1.54956
+Props/time: 1432276
+========================
+
+========================
+random3SAT/vars-250-4.cnf
+
+SATISFIABLE 
+Decisions: 25598
+Propagations: 1014031
+Time: 0.697676
+Props/time: 1453441
+========================
+
+========================
+random3SAT/vars-250-5.cnf
+
+UNSATISFIABLE 
+Decisions: 98047
+Propagations: 3944561
+Time: 2.68102
+Props/time: 1471291
+========================
+
+========================
+random3SAT/vars-250-6.cnf
+
+UNSATISFIABLE 
+Decisions: 135963
+Propagations: 5361027
+Time: 3.76029
+Props/time: 1425696
+========================
+
+========================
+random3SAT/vars-250-7.cnf
+
+SATISFIABLE 
+Decisions: 74828
+Propagations: 2960084
+Time: 2.09192
+Props/time: 1415009
+========================
+
+========================
+random3SAT/vars-250-8.cnf
+
+UNSATISFIABLE 
+Decisions: 134952
+Propagations: 5382746
+Time: 3.64903
+Props/time: 1475118
+========================
+
+========================
+random3SAT/vars-250-9.cnf
+
+SATISFIABLE 
+Decisions: 1381
+Propagations: 49768
+Time: 0.036809
+Props/time: 1352060
+========================
+
+========================
+random3SAT/vars-300-10.cnf
+
+SATISFIABLE 
+Decisions: 27530
+Propagations: 1224679
+Time: 0.901688
+Props/time: 1358207
+========================
+
+========================
+random3SAT/vars-300-1.cnf
+
+SATISFIABLE 
+Decisions: 73609
+Propagations: 3284748
+Time: 2.44145
+Props/time: 1345410
+========================
+
+========================
+random3SAT/vars-300-2.cnf
+
+UNSATISFIABLE 
+Decisions: 1208593
+Propagations: 53638415
+Time: 39.5239
+Props/time: 1357111
+========================
+
+========================
+random3SAT/vars-300-3.cnf
+
+UNSATISFIABLE 
+Decisions: 547583
+Propagations: 23952558
+Time: 17.9296
+Props/time: 1335925
+========================
+
+========================
+random3SAT/vars-300-4.cnf
+
+UNSATISFIABLE 
+Decisions: 774922
+Propagations: 34485849
+Time: 25.4937
+Props/time: 1352719
+========================
+
+========================
+random3SAT/vars-300-5.cnf
+
+SATISFIABLE 
+Decisions: 1028584
+Propagations: 45665633
+Time: 33.783
+Props/time: 1351732
+========================
+
+========================
+random3SAT/vars-300-6.cnf
+
+UNSATISFIABLE 
+Decisions: 587573
+Propagations: 26178458
+Time: 19.1707
+Props/time: 1365544
+========================
+
+========================
+random3SAT/vars-300-7.cnf
+
+SATISFIABLE 
+Decisions: 67372
+Propagations: 3117994
+Time: 2.25144
+Props/time: 1384889
+========================
+
+========================
+random3SAT/vars-300-8.cnf
+
+UNSATISFIABLE 
+Decisions: 1209319
+Propagations: 52780624
+Time: 39.3687
+Props/time: 1340674
+========================
+
+========================
+random3SAT/vars-300-9.cnf
+
+SATISFIABLE 
+Decisions: 270581
+Propagations: 12102144
+Time: 8.921
+Props/time: 1356590
+========================
+
+FINISHED

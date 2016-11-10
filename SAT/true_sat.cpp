@@ -253,32 +253,33 @@ int getNextDecisionLiteral()
     {
       for (uint j = 0; j < LITS_PER_CLAUSE; ++j)
       {
-        if (j == lastFalseIndex) continue;
-        int lit = clauses[i][j];
-        ++litScores[abs(lit)];
+          if (j == lastFalseIndex) continue;
+          int lit = clauses[i][j];
+          ++litScores[abs(lit)];
       }
     }
   }
 
   for (uint i = 1; i <= numVars; ++i)
   {
-    if(currentValueInModel(i) == UNDEF)
-    {
-      if (litScores[i] == maxScore)
+      if(currentValueInModel(i) == UNDEF)
       {
-	if(indexsOfLitsOrderedByFrequencyDesc[i-1] <
-	  indexsOfLitsOrderedByFrequencyDesc[maxLit-1]
-	)
-	{
-	  maxLit = i;
-	}
+          cout << litScores[i] << " " << maxScore << endl;
+          if (litScores[i] == maxScore)
+          {
+              if(indexsOfLitsOrderedByFrequencyDesc[i-1] <
+                      indexsOfLitsOrderedByFrequencyDesc[maxLit-1]
+                      )
+              {
+                  maxLit = i;
+              }
+          }
+          else if (litScores[i] > maxScore)
+          {
+              maxScore = litScores[i];
+              maxLit = i;
+          }
       }
-      else if (litScores[i] > maxScore)
-      {
-	maxScore = litScores[i];
-	maxLit = i;
-      }
-    }
   }
   if (maxLit > 0) return maxLit;
   return 0; // reurns 0 when all literals are defined
@@ -349,4 +350,4 @@ int main()
     modelStack.push_back(0);       // push mark indicating new DL
     setLiteralToTrue(decisionLit); // now push decisionLit on top of the mark
   }
-} 
+}
