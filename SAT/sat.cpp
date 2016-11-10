@@ -65,20 +65,20 @@ void readClauses( ){
       litFreq[k].lit = k+1;
       litFreq[k].score = 0;
   }
+  for (int k = 0; k < numVars+1; ++k) {
+      litFreq[k].lit = k;
+      litFreq[k].score = 0;
+  }
 
    // Read clauses
-  for (uint i = 0; i < numClauses; ++i)
-  {
+  for (uint i = 0; i < numClauses; ++i) {
     int lit;
     int lits[3]; int j = 0;
-    while (cin >> lit && lit != 0)
-    {
+    while (cin >> lit && lit != 0) {
         clauses[i].push_back(lit);
         lits[j++] = lit;
     }
-
-    for(uint k = 0; k < 3; ++k)
-    {
+    for(uint k = 0; k < 3; ++k) {
         lit = lits[k];
         litFreq[abs(lit)-1].lit = lit;
         litFreq[abs(lit)-1].score++; //Increase frequency
@@ -155,12 +155,57 @@ void backtrack(){
 }
 
 // Heuristic for finding the next decision literal:
-int getNextDecisionLiteral(){
-    ++numDecisions;
-  for (uint i = 1; i <= numVars; ++i) // stupid heuristic:
-    if (model[i] == UNDEF) return i;  // returns first UNDEF var, positively
-  return 0; // reurns 0 when all literals are defined*/
-}
+int getNextDecisionLiteral() { 
+  //first decision, choose the lit with most freq
+  if(decisionLevel == 0) { 
+    for(uint i = 0; i < numVars; ++i) {
+        if(currentValueInModel(litFreq[i].lit) == UNDEF)
+            return litFreq[i].lit;
+      }
+  }
+  ++numDecisions;
+  int maxScore = 0;
+  int maxLit = -1;
+
+  for(int k = 0; k < litScore.size(); ++k) {
+    litScore[k].score = 0;
+  }
+  
+  for(uint i = 0; i < numClauses; ++i) {
+    uint countFalse = 0, countUndef = 0;
+    int lastFalseIndex = -1;
+    bool sat = false;
+    for (uint j = 0; j < 3 and not sat; ++j) {
+      const int v = currentValueInModel(clauses[i][j]);
+      if (v == UNDEF) ++countUndef;
+      else if (v == FALSE) {
+        ++countFalse;
+        lastFalseIndex = j;
+      }
+      else sat = true;
+    }
+    if (countFalse == 1 and countUndef == 2) {
+      for (uint j = 0; j < 3; ++j) {
+        if (j != lastFalseIndex) {
+          int lit = clauses[i][j];
+          ++litScore[abs(lit)].score;
+        }
+      }
+    }
+  }
+
+  for (uint i = 1; i <= numVars; ++i) {
+    if(currentValueInModel(i) == UNDEF) {
+      if (litScore[i].score == maxScore and (litFreq[i-1].score < litFreq[maxLit-1].score)) maxLit = i;
+      else if (litScore[i].score > maxScore) {
+        maxScore = litScore[i].score;
+        maxLit = i;
+      }
+    }
+  }
+  if (maxLit > 0) return maxLit;
+  return 0; // reurns 0 when all literals are defined
+  }
 
 
 void checkmodel(){
